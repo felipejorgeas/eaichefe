@@ -10,7 +10,6 @@ function findRecipes(ingredientsList, callback) {
     var perfectLength = trimmedList.length;
     var query = { tags: { $all: trimmedList } };
     db.collection('receitas').find(query).toArray(function(err, docs) {
-        console.log('results: ', docs);
         if (err) {
             console.log('dio un error buscando en el banco de datos')
             return callback(err);
@@ -38,11 +37,24 @@ function findRecipes(ingredientsList, callback) {
     });
 }
 
+function findRecipeSelected(id, callback) {
+    var query = {_id:id}
+    db.collection('receitas').find(query).toArray(function(err, docs) {
+        if (err) {
+            console.log('dio un error buscando en el banco de datos')
+            return callback(err);
+        } else {
+            return callback(docs[i]);
+        }
+    });
+}
+
 function strTrim(str) {
     return str.trim();
 }
 
 
 module.exports = {
-    findRecipes: findRecipes
+    findRecipes: findRecipes,
+    findRecipeSelected: findRecipeSelected
 };
