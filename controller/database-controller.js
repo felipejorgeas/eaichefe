@@ -6,21 +6,42 @@
 
 
 function findRecipes(ingredientsList, callback) {
-    console.log('findRecipes: ', ingredientsList);
-    var perfectLength = ingredientsList.length;
-    var query = { tags: { $all: ingredientsList } };
+    var trimmedList = ingredientsList.map(strTrim);
+    var perfectLength = trimmedList.length;
+    var query = { tags: { $all: trimmedList } };
     db.collection('receitas').find(query).toArray(function(err, docs) {
+        console.log('results: ', docs);
         if (err) {
             console.log('dio un error buscando en el banco de datos')
             return callback(err);
         } else {
-            return callback({
-            	isSuggestion: true,
-            	recipes:docs
-            })
+            var perfectMatchs = [];
+
+            for (var i = 0; i < docs.length; i++) {
+                if (docs[i].tags.length === perfectLength) {
+                    perfectMatchs.push(docs[i]);
+                }
+            }
+            if (perfectMatchs.length > 0) {
+                return callback({
+                    isSuggestion: false,
+                    recipes: perfectMatchs
+                });
+            } else {
+                return callback({
+                    isSuggestion: true,
+                    recipes: docs
+                });
+            }
+
         }
     });
 }
+
+function strTrim(str) {
+    return str.trim();
+}
+
 
 module.exports = {
     findRecipes: findRecipes
