@@ -2,7 +2,11 @@ module.exports = function (request, databaseController) {
     var receitaController = {
         froms: [],
         receitaParser: function (userInput) {
-            return userInput.split(',');
+            var itens = userInput.split(',');
+            itens = itens.map(function (item) {
+                return item.trim();
+            });
+            return itens;
         },
         isFirstMessage: function (from) {
             var froms = receitaController.froms;
@@ -17,7 +21,7 @@ module.exports = function (request, databaseController) {
             receitaController.froms.push(from);
             return true;
         },
-        trataText: function (dataReceived) {
+        trataText: function (dataReceived, res) {
             var message = {};
             if (receitaController.isFirstMessage(dataReceived.from)) {
                 message = {
@@ -37,28 +41,27 @@ module.exports = function (request, databaseController) {
                             }]
                     }
                 };
+                receitaController.sendMessage(res, message);
             } else {
                 var ingredientsList = receitaController.receitaParser(dataReceived.content);
                 databaseController.findRecipes(ingredientsList, function (result) {
-                    console.log(result);
-                    message = receitaController.trataData(dataReceived, result);
+                    receitaController.trataData(dataReceived, res, result);
                 });
             }
-            return message;
         },
-        trataJson: function (dataReceived, data) {
-            var message = receitaController.trataData(dataReceived, []);
-            return message;
-        },
-        trataData: function (dataReceived, data) {
-            var data = receitaController.recipes;
-            var message = {};
+        trataJson: function (dataReceived, res, data) {
             if (dataReceived.content.recipe && dataReceived.content.resp) {
-                var receitaId = dataReceived.content.recipe;
-                var receita = data.recipes.filter(function (item) {
-                    return (item._id === receitaId);
+                var recipeId = dataReceived.content.recipe;
+                databaseController.findRecipeById(recipeId, function (result) {
+                    receitaController.trataData(dataReceived, res, result);
                 });
-                receita = receita.pop();
+            } else {
+                receitaController.trataData(dataReceived, res, []);
+            }
+        },
+        trataData: function (dataReceived, res, data) {
+            if (dataReceived.content.recipe && dataReceived.content.resp) {
+                receita = data.recipes.pop();
                 if (receita) {
                     var message = [
                         {
@@ -94,18 +97,26 @@ module.exports = function (request, databaseController) {
                                     }
                                 ]
                             }
-                        },
+                        }
                     ];
                 }
             } else if (dataReceived.content.question === 1 && dataReceived.content.resp === 1) {
-                message = {
+                var message = {
                     "id": dataReceived.id,
                     "to": dataReceived.from,
                     "type": "text/plain",
                     "content": "Por favor, informe os ingredientes separados por vírgula"
                 };
             } else if (data.isSuggestion) {
+                var message = [];
                 var receitas = [];
+                var item = {
+                    "id": dataReceived.id,
+                    "to": dataReceived.from,
+                    "type": "text/plain",
+                    "content": "Segue sugestões de receitas, hummm"
+                };
+                message.push(item);
                 data.recipes.forEach(function (receita) {
                     var item = {
                         "header": {
@@ -135,7 +146,7 @@ module.exports = function (request, databaseController) {
                     };
                     receitas.push(item);
                 });
-                message = {
+                item = {
                     "id": dataReceived.id,
                     "to": dataReceived.from,
                     "type": "application/vnd.lime.collection+json",
@@ -145,8 +156,15 @@ module.exports = function (request, databaseController) {
                         "items": receitas
                     }
                 };
+                message.push(item);
             }
-            return message;
+            if (message.hasOwnProperty(0)) {
+                message.forEach(function (item) {
+                    receitaController.sendMessage(res, item);
+                });
+            } else {
+                receitaController.sendMessage(res, message);
+            }
         },
         sendMessage: function (res, message) {
             request({
@@ -159,8 +177,9 @@ module.exports = function (request, databaseController) {
                 body: message,
                 json: true
             }, function (err, httpResponse, body) {
-                console.log(err);
-                console.log(body);
+                if (body) {
+                    console.log(body);
+                }
             });
         }
     };
