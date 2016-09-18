@@ -37,7 +37,13 @@ app.post(api + '/msg', function(req, res) {
             message = receitaController.trataJson(dataReceived);
             break;
     }
-    receitaController.sendMessage(res, message);
+    if (message.hasOwnProperty(0)) {
+        message.forEach(function (item) {
+            receitaController.sendMessage(res, item);
+        });
+    } else {
+        receitaController.sendMessage(res, message);
+    }
 });
 
 
