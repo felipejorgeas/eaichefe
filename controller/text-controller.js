@@ -20,9 +20,9 @@ var ingredients = [
 ];
 
 var negative = [
-    'Hum...perdão! Eu não entendi muito bem o que você escreveu :( Lembre-se que estou aqui para lhe ajudar a encontrar a receita ideal. Vamos tentar de novo.',
-    'Vish...desculpe-me! Não compreendi ao certo o que você digitou :( Não se esqueça que tô aqui pra te auxiliar com a receita ideal. Vamos tentar novamente.',
-    'Poxa, me desculpe mas não entendi direito o que você escreveu :/ Tô aqui pra te ajudar a encontrar a receita ideal, não se esqueça. Vamos tentar de novo.'
+    'Hum...perdão! Ainda estou em treinamento e não entendi muito bem o que você escreveu :( Lembre-se que estou aqui para lhe ajudar a encontrar a receita ideal. Vamos tentar de novo.',
+    'Vish...desculpe-me! Ainda estou em treinamento e não compreendi ao certo o que você digitou :( Não se esqueça que tô aqui pra te auxiliar com a receita ideal. Vamos tentar novamente.',
+    'Poxa, me desculpe mas ainda estou em treinamento e não entendi direito o que você escreveu :/ Tô aqui pra te ajudar a encontrar a receita ideal, não se esqueça. Vamos tentar de novo.'
 ];
 
 
