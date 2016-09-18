@@ -1,13 +1,13 @@
-module.exports = function (request, databaseController) {
+module.exports = function(request, databaseController) {
     var receitaController = {
         ids: [],
-        receitaParser: function (userInput) {
+        receitaParser: function(userInput) {
             return userInput.split(',');
         },
-        isFirstMessage: function (id) {
+        isFirstMessage: function(id) {
             var ids = receitaController.ids;
             if (ids.length) {
-                ids = ids.filter(function (item) {
+                ids = ids.filter(function(item) {
                     return (item === id);
                 });
                 if (ids.length) {
@@ -17,7 +17,7 @@ module.exports = function (request, databaseController) {
             receitaController.ids.push(id);
             return true;
         },
-        trataText: function (dataReceived) {
+        trataText: function(dataReceived) {
             if (receitaController.isFirstMessage(dataReceived.from)) {
                 var message = {
                     "id": dataReceived.id,
@@ -25,27 +25,26 @@ module.exports = function (request, databaseController) {
                     "type": "application/vnd.lime.select+json",
                     "content": {
                         "text": "Olá, eu sou o Chefito e vou te ajudar!",
-                        "options": [
-                            {
-                                "order": 1,
-                                "text": "Vamos lá",
-                                "type": "application/json",
-                                "value": {
-                                    "question": 1,
-                                    "resp": 1
-                                }
+                        "options": [{
+                            "order": 1,
+                            "text": "Vamos lá",
+                            "type": "application/json",
+                            "value": {
+                                "question": 1,
+                                "resp": 1
                             }
-                        ]
+                        }]
                     }
                 };
             } else {
-                databaseController.findRecipes(receitaController.receitaParser(dataReceived.content), function (result) {
+                var ingredientsList = receitaController.receitaParser(dataReceived.content);
+                databaseController.findRecipes(ingredientsList, function(result) {
                     console.log(result);
                 });
             }
             return message;
         },
-        trataJson: function (dataReceived) {
+        trataJson: function(dataReceived) {
             var message = {
                 "id": dataReceived.id,
                 "to": dataReceived.from,
@@ -54,7 +53,7 @@ module.exports = function (request, databaseController) {
             };
             return message;
         },
-        sendMessage: function (res, message) {
+        sendMessage: function(res, message) {
             request({
                 method: 'POST',
                 uri: 'https://msging.net/messages',
@@ -64,7 +63,7 @@ module.exports = function (request, databaseController) {
                 },
                 body: message,
                 json: true
-            }, function (err, httpResponse, body) {
+            }, function(err, httpResponse, body) {
                 console.log(err);
                 console.log(body);
                 return res.send('ok');
