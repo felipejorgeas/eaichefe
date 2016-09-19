@@ -3,13 +3,15 @@ var bodyParser = require('body-parser'),
         request = require('request'),
         assert = require('assert'),
         databaseController = require(__dirname + '/controller/database-controller.js'),
-        receitaController = require(__dirname + '/controller/receita-controller.js')(request, databaseController);
+        textController = require(__dirname + '/controller/text-controller.js'),
+        receitaController = require(__dirname + '/controller/receita-controller.js')(request, databaseController, textController);
 
 var api = '/eaichefe.api';
 var port = 3333;
 
 //Added by Carlos
 var MongoClient = require('mongodb').MongoClient;
+GLOBAL.ObjectId = require('mongodb').ObjectId; 
 var connectionString = 'mongodb://10.12.201.62:27017/EiAiChef';
 
 var app = express();

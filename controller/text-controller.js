@@ -11,12 +11,12 @@ var call = [
 ];
 
 var ingredients = [
-    'Digite para mim 3 ingredientes (ou mais) e separe cada um deles por vírgula.',
-    'Escreva por favor, 3 ingredientes (ou mais) e separe-os por vírgula.',
-    'Fale pra mim 3 ingredientes (ou mais) e separe cada um deles por vírgula.',
-    'Escreva pelo menos 3 ingredientes e não esqueça de separá-los por vírgula (Confesso que já estou ansioso pra saber o que você tem aí :D)',
-    'Digite pelo menos 3 ingredientes e não esqueça de separá-los por vírgula (Tô louco pra saber o que você tem ai :D)',
-    'Fale ao menos 3 ingredientes e é importante não esquecer de separá-los por vírgula (minha ansiedade só cresce em saber o que você tem ai :D)'
+    'Digite para mim ou ingredientes e separe cada um deles por vírgula.',
+    'Escreva por favor os ingredientes e separe-os por vírgula.',
+    'Informe pra mim os ingredientes e separe cada um deles por vírgula.',
+    'Escreva os ingredientes e não esqueça de separá-los por vírgula (Confesso que já estou ansioso pra saber o que você tem aí :D)',
+    'Digite os ingredientes e não esqueça de separá-los por vírgula (Tô louco pra saber o que você tem ai :D)',
+    'Me informe os ingredientes e é importante não esquecer de separá-los por vírgula (minha ansiedade só cresce em saber o que você tem ai :D)'
 ];
 
 var negative = [
@@ -36,7 +36,7 @@ var yes = [
 var no = [
     'Gostei de ter você por aqui. Se precisar de novas receitas é só me chamar. Chefito à disposição. Bom apetite :D',
     'Sempre que quiser, pode chamar o Chefito que estarei à disposição. Fiquei feliz em ter você por aqui. Bom apetite :D',
-    'Se precisar encontrar uma receita, já sabe onde procurar. Chefito estará à disposição. Volte sempre e Bom apetite :D'
+    'Se precisar encontrar uma receita, já sabe onde procurar. Chefito estará à disposição. Volte sempre e bom apetite :D'
 ];
 
 

@@ -1,4 +1,4 @@
-module.exports = function (request, databaseController) {
+module.exports = function (request, databaseController, textController) {
     var receitaController = {
         froms: [],
         receitaParser: function (userInput) {
@@ -29,10 +29,10 @@ module.exports = function (request, databaseController) {
                     "to": dataReceived.from,
                     "type": "application/vnd.lime.select+json",
                     "content": {
-                        "text": "Olá, eu sou o Chefito e vou te ajudar!",
+                        "text": textController.resolveText('APRESENTAÇÃO'),
                         "options": [{
                                 "order": 1,
-                                "text": "Vamos lá",
+                                "text": textController.resolveText('SIM'),
                                 "type": "application/json",
                                 "value": {
                                     "question": 1,
@@ -49,10 +49,10 @@ module.exports = function (request, databaseController) {
                 });
             }
         },
-        trataJson: function (dataReceived, res, data) {
+        trataJson: function (dataReceived, res) {
             if (dataReceived.content.recipe && dataReceived.content.resp) {
                 var recipeId = dataReceived.content.recipe;
-                databaseController.findRecipeById(recipeId, function (result) {
+                databaseController.findRecipeSelected(recipeId, function (result) {
                     receitaController.trataData(dataReceived, res, result);
                 });
             } else {
@@ -61,14 +61,20 @@ module.exports = function (request, databaseController) {
         },
         trataData: function (dataReceived, res, data) {
             if (dataReceived.content.recipe && dataReceived.content.resp) {
-                receita = data.recipes.pop();
-                if (receita) {
+                if (data && !data.hasOwnProperty(0)) {
+                    var receita = data;
                     var message = [
                         {
                             "id": dataReceived.id,
                             "to": dataReceived.from,
                             "type": "text/plain",
-                            "content": receita.titulo + 'Tempo de preparo:\n' + receita.tempo + '\n'
+                            "content": receita.titulo + '\nTempo de preparo:\n' + receita.tempo + '\n\nIngredientes:\n' + receita.ingredientes.join('\n')
+                        },
+                        {
+                            "id": dataReceived.id,
+                            "to": dataReceived.from,
+                            "type": "text/plain",
+                            "content": '\n\nModo de preparo:\n' + receita.preparo.join('\n')
                         },
                         {
                             "id": dataReceived.id,
@@ -79,7 +85,7 @@ module.exports = function (request, databaseController) {
                                 "options": [
                                     {
                                         "order": 1,
-                                        "text": "Vamos lá",
+                                        "text": "Sim",
                                         "type": "application/json",
                                         "value": {
                                             "question": 1,
@@ -91,7 +97,7 @@ module.exports = function (request, databaseController) {
                                         "text": "Não, obrigado",
                                         "type": "application/json",
                                         "value": {
-                                            "question": 1,
+                                            "question": 2,
                                             "resp": 2
                                         }
                                     }
@@ -105,16 +111,27 @@ module.exports = function (request, databaseController) {
                     "id": dataReceived.id,
                     "to": dataReceived.from,
                     "type": "text/plain",
-                    "content": "Por favor, informe os ingredientes separados por vírgula"
+                    "content": textController.resolveText('INGREDIENTES')
                 };
-            } else if (data.isSuggestion) {
+            } else if (dataReceived.content.question === 2 && dataReceived.content.resp === 2) {
+                var message = {
+                    "id": dataReceived.id,
+                    "to": dataReceived.from,
+                    "type": "text/plain",
+                    "content": textController.resolveText('NÃO')
+                };
+            } else if (data.recipes.length) {
+                var msg = "Oba, encontrei estas receitas perfeitas para você! Tem todos os ingredientes que você me informou =)";
+                if (data.isSuggestion) {
+                    msg = "Tenho algumas sugestões de receitas com os ingredientes que você me informou (Y)";
+                }
                 var message = [];
                 var receitas = [];
                 var item = {
                     "id": dataReceived.id,
                     "to": dataReceived.from,
                     "type": "text/plain",
-                    "content": "Segue sugestões de receitas, hummm"
+                    "content": msg
                 };
                 message.push(item);
                 data.recipes.forEach(function (receita) {
@@ -151,36 +168,60 @@ module.exports = function (request, databaseController) {
                     "to": dataReceived.from,
                     "type": "application/vnd.lime.collection+json",
                     "content": {
-                        "text": "Segue sugestões de receitas, hummm",
                         "itemType": "application/vnd.lime.document-select+json",
                         "items": receitas
                     }
                 };
                 message.push(item);
+            } else if (!data.length) {
+                var message = {
+                    "id": dataReceived.id,
+                    "to": dataReceived.from,
+                    "type": "application/vnd.lime.select+json",
+                    "content": {
+                        "text": textController.resolveText('NEGATIVA'),
+                        "options": [
+                            {
+                                "order": 1,
+                                "text": textController.resolveText('SIM'),
+                                "type": "application/json",
+                                "value": {
+                                    "question": 1,
+                                    "resp": 1
+                                }
+                            }
+                        ]
+                    }
+                };
             }
             if (message.hasOwnProperty(0)) {
+                var delay = 0;
                 message.forEach(function (item) {
-                    receitaController.sendMessage(res, item);
+                    delay += 1000;
+                    receitaController.sendMessage(res, item, delay);
                 });
             } else {
-                receitaController.sendMessage(res, message);
+                receitaController.sendMessage(res, message, 0);
             }
         },
-        sendMessage: function (res, message) {
-            request({
-                method: 'POST',
-                uri: 'https://msging.net/messages',
-                headers: {
-                    'Content-type': 'application/json',
-                    'Authorization': 'Key ZWFpY2hlZmU6eE5hbnFDbFhaSWdHMmVuY0o5NGU='
-                },
-                body: message,
-                json: true
-            }, function (err, httpResponse, body) {
-                if (body) {
-                    console.log(body);
-                }
-            });
+        sendMessage: function (res, message, delay) {
+            setTimeout(function () {
+                console.log(message);
+                request({
+                    method: 'POST',
+                    uri: 'https://msging.net/messages',
+                    headers: {
+                        'Content-type': 'application/json',
+                        'Authorization': 'Key ZWFpY2hlZmU6eE5hbnFDbFhaSWdHMmVuY0o5NGU='
+                    },
+                    body: message,
+                    json: true
+                }, function (err, httpResponse, body) {
+                    if (body) {
+                        console.log(body);
+                    }
+                });
+            }, delay);
         }
     };
     return receitaController;

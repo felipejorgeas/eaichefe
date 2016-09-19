@@ -25,15 +25,12 @@ function findRecipes(ingredientsList, callback) {
 }
 
 function findRecipeSelected(id, callback) {
-    var query = {_id: id}
-    db.collection('receitas').find(query).toArray(function (err, docs) {
+    var query = {_id: new ObjectId(id)};
+    db.collection('receitas').find(new ObjectId(id)).toArray(function (err, docs) {
         if (err) {
-            console.log('dio un error buscando en el banco de datos')
             return callback(err);
         } else {
-            return callback({
-                recipes: docs[0]
-            });
+            return callback(docs[0]);
         }
     });
 }
